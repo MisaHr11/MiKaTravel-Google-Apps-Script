@@ -1,7 +1,4 @@
-//1348 function vytvorSeznamzeTabulky() uživetelské smlouvy
-//cybí splatnost
-
-
+//MiKaTravel Google Apps Script celý backhand
 function doGet(e) {
   removeAllExpiredTokens();
   try {

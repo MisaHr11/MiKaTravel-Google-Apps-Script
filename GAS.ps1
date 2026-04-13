@@ -1,35 +1,55 @@
-# Zeptá se na název projektu
-$projectName = Read-Host "Zadej název projektu (složky)"
+# Přechod do projektu
+$projectPath = "C:\Users\micha\Documents\MiKa\GAS"
+Set-Location -Path $projectPath
 
-if (-not $projectName) {
-    Write-Host "Název projektu je povinný." -ForegroundColor Red
+# kontrola clasp
+if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
+    Write-Host "clasp není dostupný." -ForegroundColor Red
     exit
 }
 
-# Zeptá se na scriptId
-$scriptId = Read-Host "Zadej scriptId z Apps Script URL"
+# upload do Google Apps Script
+Write-Host "Nahrávám do Google Apps Script..." -ForegroundColor Cyan
+clasp push
 
-if (-not $scriptId) {
-    Write-Host "scriptId je povinné." -ForegroundColor Red
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Chyba při nahrávání do GAS." -ForegroundColor Red
     exit
 }
 
-# Vytvoření složky
-New-Item -ItemType Directory -Path $projectName -Force | Out-Null
-Set-Location $projectName
+# Git automatizace
+Write-Host "Commituji do GitHubu..." -ForegroundColor Cyan
 
-# Clasp clone
-Write-Host "Clonuji projekt..." -ForegroundColor Cyan
-npx clasp clone $scriptId
+# zpráva commitu
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$commitMessage = "Auto deploy GAS - $timestamp"
 
-# Inicializace Git (volitelné)
-$initGit = Read-Host "Chceš inicializovat Git? (y/n)"
+git add .
 
-if ($initGit -eq "y") {
-    git init
-    git add .
-    git commit -m "Initial GAS import"
-    Write-Host "Git inicializován." -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Git add selhal." -ForegroundColor Red
+    exit
 }
 
-Write-Host "Hotovo." -ForegroundColor Green
+git commit -m "$commitMessage"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Git commit selhal (možná žádné změny)." -ForegroundColor Yellow
+}
+
+git push origin main
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Git push selhal." -ForegroundColor Red
+    exit
+}
+
+# volitelný tag = "nová implementace"
+$version = Get-Date -Format "yyyyMMdd-HHmm"
+
+git tag "release-$version"
+git push origin "release-$version"
+
+Write-Host "Deploy dokončen (GAS + GitHub + release tag)." -ForegroundColor Green
+
+Pause

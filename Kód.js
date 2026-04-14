@@ -6407,9 +6407,19 @@ function pridej_funkci(funkce) {
 
 function post(username, usernameb, id) {
   const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  const props = PropertiesService.getScriptProperties();
+
+  const gotLock = lock.tryLock(5000);
+  if (!gotLock) {
+    return { success: false, error: "busy" };
+  }
 
   try {
+    // idempotence ochrana
+    if (props.getProperty(id)) {
+      return { success: true, message: "already processed" };
+    }
+
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Requests");
     const data = sheet.getDataRange().getValues();
 
@@ -6419,17 +6429,15 @@ function post(username, usernameb, id) {
       return { success: false, message: "Neplatná akce" };
     }
 
-    const foundRow = data[rowIndex];
-
-    let funkce = foundRow[1];
-    funkce = funkce.replace("{[username]}", '"' + String(username) + '"');
-    funkce = funkce.replace("{[usernameb]}", '"' + String(usernameb) + '"');
+    let funkce = data[rowIndex][1];
+    funkce = funkce.replace("{[username]}", `"${String(username)}"`);
+    funkce = funkce.replace("{[usernameb]}", `"${String(usernameb)}"`);
 
     const vysledek = eval(funkce);
 
-    // očekáváme strukturu: { success: true/false }
     if (vysledek && vysledek.success === true) {
       sheet.deleteRow(rowIndex + 1);
+      props.setProperty(id, "done");
     }
 
     return vysledek;

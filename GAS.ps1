@@ -2,7 +2,7 @@
 # KONFIGURACE
 # ================================
 $projectPath = "C:\Users\micha\Documents\MiKa\GAS"
-$deploymentId = "AKfycbwqbsd4MeHjmQOPNoaYhsbCpQjiSF6Ki2nBWAGgyoOK"
+$deploymentId = "AKfycbzVOUktuX5TszgPJBnNi4ONvDS3okQKwNjXkZhpYkXfxXEep7U5mtnHdMir0dP5o1viaA"
 
 # jistota pro clasp v PATH
 $env:Path += ";C:\Users\micha\AppData\Roaming\npm"

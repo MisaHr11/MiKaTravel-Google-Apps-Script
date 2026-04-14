@@ -7431,7 +7431,7 @@ function vytovr_sluzbu(nazev, datumDo) {
   return kod
 }
 
-function aaaa____________________________________________________a() {
+function testovaciFunkce() {
   Logger.log(nacteniKoduHotel("MíšaHr", { data: 'HOTEL-HJL-WL4QI4W58W2026-04-10', action: 'nacteniKoduHotel' }))
   //Logger.log(email_banka({ action: 'email_banka', email: 'michael.hruska11@gmail.com' }, "MíšaHr"));
   //Logger.log(prihlaseni_banka({

@@ -4,6 +4,18 @@
 $projectPath = "C:\Users\micha\Documents\MiKa\GAS"
 $deploymentId = "AKfycbwqbsd4MeHjmQOPNoaYhsbCpQjiSF6Ki2nBWAGgyoOK"
 
+# jistota pro clasp v PATH
+$env:Path += ";C:\Users\micha\AppData\Roaming\npm"
+
+# ================================
+# DOTAZ NA NÁZEV DEPLOYMENTU
+# ================================
+$deploymentDescription = Read-Host "Zadej název / popis deploymentu"
+
+if (-not $deploymentDescription) {
+    $deploymentDescription = "Auto deploy"
+}
+
 # ================================
 # PŘECHOD DO PROJEKTU
 # ================================
@@ -18,23 +30,26 @@ if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
 }
 
 # ================================
-# UPLOAD DO GOOGLE APPS SCRIPT
+# UPLOAD DO GAS
 # ================================
-Write-Host "Nahrávám do Google Apps Script..." -ForegroundColor Cyan
+Write-Host "Nahrávám do GAS..." -ForegroundColor Cyan
 
 clasp push
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Chyba při nahrávání do GAS." -ForegroundColor Red
+    Write-Host "Chyba při nahrávání." -ForegroundColor Red
     exit
 }
 
 # ================================
-# DEPLOY (PŘEPSÁNÍ EXISTUJÍCÍ IMPLEMENTACE)
+# DEPLOY (S NÁZVEM)
 # ================================
 Write-Host "Aktualizuji deployment..." -ForegroundColor Cyan
 
-clasp deploy -i $deploymentId
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$fullDescription = "$deploymentDescription - $timestamp"
+
+clasp deploy -i $deploymentId -d "$fullDescription"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Deployment selhal." -ForegroundColor Red
@@ -42,12 +57,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ================================
-# GIT AUTOMATIZACE
+# GIT
 # ================================
 Write-Host "Commituji do GitHubu..." -ForegroundColor Cyan
 
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$commitMessage = "Auto deploy GAS - $timestamp"
+$commitMessage = "Auto deploy GAS - $fullDescription"
 
 git add .
 
@@ -70,7 +84,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ================================
-# TAG (RELEASE)
+# TAG
 # ================================
 $version = Get-Date -Format "yyyyMMdd-HHmm"
 
@@ -80,6 +94,6 @@ git push origin "release-$version"
 # ================================
 # HOTOVO
 # ================================
-Write-Host "Deploy dokončen (GAS + GitHub + přepsaná implementace)." -ForegroundColor Green
+Write-Host "Deploy dokončen." -ForegroundColor Green
 
 Pause

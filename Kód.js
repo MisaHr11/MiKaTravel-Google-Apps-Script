@@ -1,4 +1,4 @@
-//MiKaTravel Google Apps Script celý backhand
+//MiKaTravel Google Apps Script celý backhand, verzování vyřešeno
 function doGet(e) {
   removeAllExpiredTokens();
   try {

@@ -8,12 +8,12 @@ $deploymentId = "AKfycbzVOUktuX5TszgPJBnNi4ONvDS3okQKwNjXkZhpYkXfxXEep7U5mtnHdMi
 $env:Path += ";C:\Users\micha\AppData\Roaming\npm"
 
 # ================================
-# DOTAZ NA NÁZEV DEPLOYMENTU
+# DOTAZ NA POPIS
 # ================================
-$deploymentDescription = Read-Host "Zadej název / popis deploymentu"
+$deploymentDescription = Read-Host "Zadej název / popis změny"
 
 if (-not $deploymentDescription) {
-    $deploymentDescription = "Auto deploy"
+    $deploymentDescription = "Auto update"
 }
 
 # ================================
@@ -32,7 +32,7 @@ if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
 # ================================
 # UPLOAD DO GAS
 # ================================
-Write-Host "Nahrávám do GAS..." -ForegroundColor Cyan
+Write-Host "Nahrávám změny do GAS..." -ForegroundColor Cyan
 
 clasp push
 
@@ -42,26 +42,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ================================
-# DEPLOY (S NÁZVEM)
-# ================================
-Write-Host "Aktualizuji deployment..." -ForegroundColor Cyan
-
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$fullDescription = "$deploymentDescription - $timestamp"
-
-clasp deploy -i $deploymentId -d "$fullDescription"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Deployment selhal." -ForegroundColor Red
-    exit
-}
-
-# ================================
 # GIT
 # ================================
 Write-Host "Commituji do GitHubu..." -ForegroundColor Cyan
 
-$commitMessage = "Auto deploy GAS - $fullDescription"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$fullDescription = "$deploymentDescription - $timestamp"
+$commitMessage = "GAS update - $fullDescription"
 
 git add .
 
@@ -73,7 +60,7 @@ if ($LASTEXITCODE -ne 0) {
 git commit -m "$commitMessage"
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Git commit: žádné změny." -ForegroundColor Yellow
+    Write-Host "Žádné změny ke commitu." -ForegroundColor Yellow
 }
 
 git push origin main
@@ -92,8 +79,20 @@ git tag "release-$version"
 git push origin "release-$version"
 
 # ================================
+# URL VÝSTUP
+# ================================
+$webAppUrl = "https://script.google.com/macros/s/$deploymentId/exec"
+
+Write-Host ""
+Write-Host "================================" -ForegroundColor DarkGray
+Write-Host "DEPLOYMENT URL:" -ForegroundColor Green
+Write-Host $webAppUrl -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor DarkGray
+Write-Host ""
+
+# ================================
 # HOTOVO
 # ================================
-Write-Host "Deploy dokončen." -ForegroundColor Green
+Write-Host "Dokončeno." -ForegroundColor Green
 
 Pause

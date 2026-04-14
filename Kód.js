@@ -6406,37 +6406,37 @@ function pridej_funkci(funkce) {
 
 
 function post(username, usernameb, id) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Requests");
-  const data = sheet.getDataRange().getValues();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
 
-  const rowIndex = data.findIndex(row => row[0] === id);
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Requests");
+    const data = sheet.getDataRange().getValues();
 
-  if (rowIndex === -1) {
-    return {
-      found: false,
-      value: null,
-      message: "Neplatná akce"
-    };
+    const rowIndex = data.findIndex(row => row[0] === id);
+
+    if (rowIndex === -1) {
+      return { success: false, message: "Neplatná akce" };
+    }
+
+    const foundRow = data[rowIndex];
+
+    let funkce = foundRow[1];
+    funkce = funkce.replace("{[username]}", '"' + String(username) + '"');
+    funkce = funkce.replace("{[usernameb]}", '"' + String(usernameb) + '"');
+
+    const vysledek = eval(funkce);
+
+    // očekáváme strukturu: { success: true/false }
+    if (vysledek && vysledek.success === true) {
+      sheet.deleteRow(rowIndex + 1);
+    }
+
+    return vysledek;
+
+  } finally {
+    lock.releaseLock();
   }
-
-  const foundRow = data[rowIndex];
-  
-  sheet.deleteRow(rowIndex + 1);
-
-  Logger.log(foundRow[1]);
-
-  let funkce = foundRow[1];
-  funkce = funkce.replace("{[username]}", '"' + String(username) + '"');
-  funkce = funkce.replace("{[usernameb]}", '"' + String(usernameb) + '"');
-
-  Logger.log(funkce);
-
-  const vysledek = eval(funkce);
-
-  Logger.log(vysledek);
-
-
-  return vysledek;
 }
 
 function vytvorPDF417(text) {

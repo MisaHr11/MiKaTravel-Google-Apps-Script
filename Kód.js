@@ -7431,8 +7431,9 @@ function vytovr_sluzbu(nazev, datumDo) {
   return kod
 }
 
-function testovaciFunkce() {
-  Logger.log(nacteniKoduHotel("MíšaHr", { data: 'HOTEL-HJL-WL4QI4W58W2026-04-10', action: 'nacteniKoduHotel' }))
+function aaaa_________________________aaaa() {
+  Logger.log(vytvorCestovniDokumenty("ES-2026-0414-00032"));
+  //Logger.log(nacteniKoduHotel("MíšaHr", { data: 'HOTEL-HJL-WL4QI4W58W2026-04-10', action: 'nacteniKoduHotel' }))
   //Logger.log(email_banka({ action: 'email_banka', email: 'michael.hruska11@gmail.com' }, "MíšaHr"));
   //Logger.log(prihlaseni_banka({
    //email: 'michael.hruska11@gmail.com',
@@ -7811,7 +7812,7 @@ function vytvorCestovniDokumenty(cislo) {
     const letMinutyTam = Number(casPartsTam[2] || 0);
     Logger.log(`${LOG} délka letu TAM: ${letHodinyTam}h ${letMinutyTam}m`);
 
-    let odletTam = new Date(hotel.zajezd.datum_od);
+    let odletTam = new Date();
     odletTam.setHours(hodinyTam, minutyTam);
 
     odletTam.setHours(odletTam.getHours() + letHodinyTam);
@@ -7831,7 +7832,7 @@ function vytvorCestovniDokumenty(cislo) {
     const letMinutyZpet = Number(casPartsZpet[2] || 0);
     Logger.log(`${LOG} délka letu ZPET: ${letHodinyZpet}h ${letMinutyZpet}m`);
 
-    let odletZpet = new Date(hotel.zajezd.datum_do);
+    let odletZpet = new Date();
     odletZpet.setHours(hodinyZpet, minutyZpet);
 
     odletZpet.setHours(odletZpet.getHours() + letHodinyZpet);
@@ -7841,17 +7842,48 @@ function vytvorCestovniDokumenty(cislo) {
     Logger.log(`${LOG} pristaniZpet: ${pristaniZpet}`);
 
     const vystup = {
-      smlouva: { cislo },
-      zajezd: hotel.zajezd,
-      let: {
-        odlet_cas: casLetuTam,
-        prilet_cas: pristaniTam
+      "smlouva": {
+        "cislo": cislo
       },
-      navrat: {
-        cas: pristaniZpet
+      "zajezd": {
+        "destinace": hotel.zajezd.destinace ,
+        "datum_od": hotel.zajezd.datum_od,
+        "datum_do": hotel.zajezd.datum_do,
+        "pocet_noci": hotel.zajezd.noci,
+        "stravovani": hotel.zajezd.stravovani
       },
-      jmennyseznam: JSON.parse(row[12])
-    };
+      "let": {
+        "odlet_letiste": "MiKaLetiště - Blížejov",
+        "odlet_datum": hotel.zajezd.datum_od,
+        "odlet_cas": casLetuTam,
+        "cislo": let_cislo,
+        "terminal": "Terminál 1 / Gate 11",
+        "prilet_letiste": lety[1],
+        "prilet_datum": hotel.zajezd.datum_od,
+        "prilet_cas": pristaniTam,
+        "prirucni": "1 kus, 8 kg",
+        "odbavene": "1 kus, 20 kg"
+      },
+      "hotel": {
+        "nazev": hotel.zajezd.hotel.nazev,
+        "kategorie": Math.round(hotel.zajezd.hotel.kategorie)
+      },
+      "transfer": {
+        "typ": "Autobus",
+        "cas_prijezd": pristaniTam
+      },
+      "navrat": {
+        "datum": hotel.zajezd.datum_do,
+        "cas": pristaniZpet,
+        "cislo": let_cislo_zpet,
+        "transfer": "Ano – autobus z hotelu na letiště"
+      },
+      "platebni_info": {
+        "stav_uhrady": "Zaplaceno"
+      },
+      "jmennyseznam": JSON.parse(row[12]),
+      "pokyny": "Cestující je povinen zkontrolovat platnost cestovních dokladů a splnění vstupních podmínek cílové destinace. Během pobytu je nutné respektovat místní právní předpisy a zvyklosti. Při vstupu do destinace se platí vízum."
+    }
 
     Logger.log(`${LOG} vystup: ${JSON.stringify(vystup)}`);
 

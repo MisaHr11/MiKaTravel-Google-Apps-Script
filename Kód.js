@@ -131,6 +131,44 @@ function doPost(e) {
       return createJsonResponse(generujVyhruProUzivatele(username));
     }
 
+    else if (body.action === "chat") {
+      // --- Debug info jen pro objednávku ---
+      const debugInfo = {
+        headers: e.headers || {},
+        bodyRaw: contents,
+        token: null
+      };
+
+      // Načtení tokenu z těla requestu
+      debugInfo.token = body.secureToken || null;
+
+      Logger.log("Token z body: %s", debugInfo.token);
+
+      // --- Kontrola tokenu ---
+      if (!debugInfo.token) {
+        return createJsonResponse({
+          success: false,
+          error: "Token chybí",
+          debug: debugInfo
+        });
+      }
+
+      const tokenData = getTokenByValue(debugInfo.token, 60);
+
+      if (!tokenData || tokenData.service !== "secure") {
+        return createJsonResponse({
+          success: false,
+          error: "Neplatný nebo neautorizovaný token",
+          debug: debugInfo
+        });
+      }
+
+      const username = tokenData.username;
+
+      // --- Zpracování objednávky ---
+      return createJsonResponse(chat(username, body));
+    }
+
     else if (body.action === "nacteniKoduLetiste") {
       // --- Debug info jen pro objednávku ---
       const debugInfo = {
@@ -7438,7 +7476,7 @@ function vytovr_sluzbu(nazev, datumDo) {
 }
 
 function aaaa_________________________aaaa() {
-  Logger.log(vytvorCestovniDokumenty("ES-2026-0414-00032"));
+  //Logger.log(vytvorCestovniDokumenty("ES-2026-0414-00032"));
   //Logger.log(nacteniKoduHotel("MíšaHr", { data: 'HOTEL-HJL-WL4QI4W58W2026-04-10', action: 'nacteniKoduHotel' }))
   //Logger.log(email_banka({ action: 'email_banka', email: 'michael.hruska11@gmail.com' }, "MíšaHr"));
   //Logger.log(prihlaseni_banka({
@@ -7605,8 +7643,107 @@ function aaaa_________________________aaaa() {
 }))*/
   //Logger.log(hotelovyVoucherData("ES-2026-0411-00030"));
   //vytvorCestovniDokumenty("ES-2026-0411-00029");
+  Logger.log(chat("Mamka", {akce: "zprava", mistnost: "Diskuze", message: "Ahoj jak se máte"}))
 }
 
+
+
+
+function chat(username, body) {
+  const tabulka = SpreadsheetApp.openById("156oICDceuUKdvmcAHCWQGZi-0Vk4vnLhM5n3hMvYzYw");
+  const chaty = tabulka.getSheetByName("Místnosti");
+  const dataChaty = chaty.getDataRange().getValues();
+
+  if (body.akce === "zpravy"){
+    for (let i = 0; i < dataChaty.length; i++) {
+      const row = dataChaty[i];
+      const mistnost = row[0];
+      const uzivateleRaw = row[1];
+
+      if (mistnost === body.mistnost) {
+        Logger.log("Shoda nalezena na řádku: " + (i + 1));
+
+        const uzivatele = uzivateleRaw ? uzivateleRaw.split(",") : [];
+
+        if (uzivatele.includes(username)) {
+          try {
+            const sheet = tabulka.getSheetByName(body.mistnost);
+            const data = sheet.getDataRange().getValues();
+
+            // pokud chceš JSON pro frontend
+            return {success: true, messages: formatData(data)};
+
+          } catch (e) {
+            return {success: false};
+          }
+        }
+      }
+    }
+  } else if (body.akce === "mistnosti") {
+    const response = [];
+    for (let i = 0; i < dataChaty.length; i++) {
+      const row = dataChaty[i];
+      const mistnost = row[0];
+      const uzivateleRaw = row[1];
+
+      const uzivatele = uzivateleRaw ? uzivateleRaw.split(",") : [];
+
+      if (uzivatele.includes(username)) {
+        try {
+          response.push(mistnost);
+        } catch (e) {
+          return {success: false};
+        }
+      }
+    }
+    return {success: true, mistnosti: response}
+  } else if (body.akce === "zprava") {
+    for (let i = 0; i < dataChaty.length; i++) {
+      const row = dataChaty[i];
+      const mistnost = row[0];
+      const uzivateleRaw = row[1];
+
+      if (mistnost === body.mistnost) {
+        Logger.log("Shoda nalezena na řádku: " + (i + 1));
+
+        const uzivatele = uzivateleRaw ? uzivateleRaw.split(",") : [];
+
+        Logger.log(uzivatele.includes(username))
+
+        if (uzivatele.includes(username)) {
+          try {
+            const sheet = tabulka.getSheetByName(body.mistnost);
+
+            sheet.appendRow([
+              new Date(),        // Timestamp
+              username,          // uživatel
+              body.message       // zpráva
+            ]);
+            return {success: true}
+          } catch (e) {
+            return {success: false};
+          }
+        }
+      }
+    }
+  }
+  return {success: false};
+}
+
+
+
+function formatData(values) {
+  const headers = values[0];
+  const rows = values.slice(1);
+
+  return rows.map(row => {
+    return {
+      timestamp: row[0],
+      uzivatel: row[1],
+      message: row[2]
+    };
+  });
+}
 function otestujVsechnyBarcody() {
   const allowedTypes = [
     'pdf417', 'qrcode', 'azteccode', 'datamatrix',

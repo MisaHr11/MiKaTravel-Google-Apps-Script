@@ -2398,12 +2398,10 @@ function overeni_darkovy_kod(body) {
         const novaCena = Math.max(0, cena - slevaCastka);
 
         if (objednavka) {
-          for (let i = 1; i < sheetData.length; i++) { // od 1 pokud máš hlavičku
-            let hodnota = sheetData[i][7]; // sloupec H
+          let hodnota = sheetData[i][7];
 
-            if (hodnota !== "" && !isNaN(hodnota)) {
-              sheet.getRange(i + 1, 8).setValue(Number(hodnota) - 1);
-            }
+          if (hodnota !== "" && !isNaN(hodnota)) {
+            sheet.getRange(i + 1, 8).setValue(Number(hodnota) - 1);
           }
         }
 

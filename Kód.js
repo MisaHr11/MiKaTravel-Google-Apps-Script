@@ -7643,7 +7643,12 @@ function aaaa_________________________aaaa() {
 }))*/
   //Logger.log(hotelovyVoucherData("ES-2026-0411-00030"));
   //vytvorCestovniDokumenty("ES-2026-0411-00029");
-  Logger.log(chat("MíšaHr", {akce: "vytvor_mistnost", mistnost: "Diskuz", uzivatele: "MíšaHr,Vostrov,Mamka"}))
+  Logger.log(chat("MíšaHr", {
+  action: 'chat',
+  akce: 'smazat_mistnost',
+  mistnost: 'Testová místnost',
+  uzivatele: 'MíšaHr'
+}))
 }
 
 
@@ -7760,6 +7765,38 @@ function chat(username, body) {
     return {
       success: true,
       message: "Místnost vytvořena"
+    };
+  } else if (body.akce === "smazat_mistnost") {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1) odstranění z tabulky Místnosti
+    const sheetChaty = tabulka.getSheetByName("Místnosti");
+    const data = sheetChaty.getDataRange().getValues();
+
+    let found = false;
+
+    for (let i = data.length - 1; i >= 0; i--) {
+      const mistnost = data[i][0];
+      const uzivateleRaw = data[i][1];
+      const uzivatele = uzivateleRaw ? uzivateleRaw.split(",") : [];
+
+      if (mistnost === body.mistnost && uzivatele.includes(username)) {
+        sheetChaty.deleteRow(i + 1);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return {
+        success: false,
+        message: "Místnost neexistuje"
+      };
+    }
+
+    return {
+      success: true,
+      message: "Místnost smazána"
     };
   }
   return {success: false};

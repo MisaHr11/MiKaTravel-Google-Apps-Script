@@ -42,6 +42,18 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ================================
+# DEPLOY (BEZ NOVÉ VERZE)
+# ================================
+Write-Host "Aktualizuji deployment (HEAD)..." -ForegroundColor Cyan
+
+clasp deploy --deploymentId $deploymentId --versionNumber HEAD --description "$deploymentDescription"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Deploy selhal." -ForegroundColor Red
+    exit
+}
+
+# ================================
 # GIT
 # ================================
 Write-Host "Commituji do GitHubu..." -ForegroundColor Cyan

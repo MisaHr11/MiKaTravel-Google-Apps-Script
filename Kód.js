@@ -6706,8 +6706,8 @@ function upravZkopirujPridejObrExportujSmaz(data) {
     Logger.log("Úprava listu pro: " + oznaceni);
 
     // === ÚPRAVA BUNĚK ===
-    sheet.getRange("A4").setValue(data.doDestinace);
-    sheet.getRange("B4").setValue(data.zDestinace);
+    sheet.getRange("A4").setValue(data.zDestinace);
+    sheet.getRange("B4").setValue(data.doDestinace);
     sheet.getRange("A6").setValue(data.datumOdlet);
     sheet.getRange("A7").setValue(data.casOdlet);
     sheet.getRange("B6").setValue(data.datumOdlet);
@@ -7643,7 +7643,7 @@ function aaaa_________________________aaaa() {
 }))*/
   //Logger.log(hotelovyVoucherData("ES-2026-0411-00030"));
   //vytvorCestovniDokumenty("ES-2026-0411-00029");
-  Logger.log(chat("Mamka", {akce: "zprava", mistnost: "Diskuze", message: "Ahoj jak se máte"}))
+  Logger.log(chat("MíšaHr", {akce: "vytvor_mistnost", mistnost: "Diskuz", uzivatele: "MíšaHr,Vostrov,Mamka"}))
 }
 
 
@@ -7726,6 +7726,41 @@ function chat(username, body) {
         }
       }
     }
+  } else if (body.akce === "vytvor_mistnost") {
+    // kontrola existence místnosti
+    for (let i = 0; i < dataChaty.length; i++) {
+      const row = dataChaty[i];
+      const mistnost = row[0];
+
+      if (mistnost === body.mistnost) {
+        return { success: false, message: "Místnost již existuje" };
+      }
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1) přidání do tabulky chatů (např. Sheet "Chaty")
+    const sheetChaty = tabulka.getSheetByName("Místnosti");
+    sheetChaty.appendRow([
+      body.mistnost,
+      body.uzivatele,
+      username
+    ]);
+
+    // 2) vytvoření nového sheetu pro místnost
+    const newSheet = tabulka.insertSheet(body.mistnost);
+
+    // 3) hlavička
+    newSheet.appendRow([
+      "Timestamp",
+      "Uživatel",
+      "Message"
+    ]);
+
+    return {
+      success: true,
+      message: "Místnost vytvořena"
+    };
   }
   return {success: false};
 }

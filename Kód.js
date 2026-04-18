@@ -1517,7 +1517,7 @@ function odeslat_objednavku(body, username) {
     JSON.stringify(objednavka.cestujici || {}), // L - cestující JSON
     JSON.stringify(cena),                     // M - cena celkem
     JSON.stringify(vypocetSplatnosti(objednavka)), // splatnost dodělat v aplikaci 
-    Number(cena.celkovaCena),                         // O - celková cena číslem
+    Number(cena.celkovaCena.replace(",", ".")),                         // O - celková cena číslem
   ];
 
   sheet.appendRow(rowData);

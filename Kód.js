@@ -1,4 +1,4 @@
-//MiKaTravel Google Apps Script celý backhand, verzování vyřešeno
+//MiKaTravel Google Apps Script celý backhend, verzování vyřešeno
 function doGet(e) {
   removeAllExpiredTokens();
   try {
@@ -1517,7 +1517,7 @@ function odeslat_objednavku(body, username) {
     JSON.stringify(objednavka.cestujici || {}), // L - cestující JSON
     JSON.stringify(cena),                     // M - cena celkem
     JSON.stringify(vypocetSplatnosti(objednavka)), // splatnost dodělat v aplikaci 
-    cena.celkovaCena,                         // O - celková cena číslem
+    Number(cena.celkovaCena),                         // O - celková cena číslem
   ];
 
   sheet.appendRow(rowData);
